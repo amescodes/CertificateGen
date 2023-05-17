@@ -27,7 +27,7 @@ using Manifest = NuGet.Packaging.Manifest;
 
 [GitHubActions(
     name: "cicd",
-    GitHubActionsImage.WindowsLatest,
+    GitHubActionsImage.UbuntuLatest,
     FetchDepth = 0,
     OnPullRequestBranches = new[] { "main", },
     OnPushBranches = new[] { "main", "develop" },
@@ -110,8 +110,8 @@ class Build : NukeBuild
             coreNugetPackageMetadata.SetCommonNugetProperties();
 
             Manifest coreNuspecFile = NuGet.Packaging.Manifest.Create(coreNugetPackageMetadata);
-            coreNuspecFile.Files.Add(new ManifestFile() { Source = $"{CoreProjectName}.dll", Target = "lib/netstandard2.0" });
-            coreNuspecFile.Files.Add(new ManifestFile() { Source = $"{CoreProjectName}.pdb", Target = "lib/netstandard2.0" });
+            coreNuspecFile.Files.Add(new ManifestFile() { Source = $"{CoreProjectName}.dll", Target = "lib/net461" });
+            coreNuspecFile.Files.Add(new ManifestFile() { Source = $"{CoreProjectName}.pdb", Target = "lib/net461" });
 
             //coreNuspecFile.Files.Add(new ManifestFile() { Source = IconFileName, Target = "." });
 
