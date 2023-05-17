@@ -32,7 +32,7 @@ using Manifest = NuGet.Packaging.Manifest;
     OnPullRequestBranches = new[] { "main", },
     OnPushBranches = new[] { "main", "develop" },
     InvokedTargets = new[] { nameof(PublishNugetsGithub) },
-    ImportSecrets = new[] { nameof(CertificateGenNugetApiKey) },
+    ImportSecrets = new[] { nameof(NugetApiKey) },
     EnableGitHubToken = true,
     PublishArtifacts = true,
     CacheKeyFiles = new[] { "global.json", "./**.csproj" }
@@ -41,7 +41,7 @@ class Build : NukeBuild
 {
     [Solution] readonly Solution Solution;
 
-    [Nuke.Common.Parameter][Secret] readonly string CertificateGenNugetApiKey;
+    [Nuke.Common.Parameter][Secret] readonly string NugetApiKey;
 
     [GitRepository] readonly GitRepository Repository;
 
@@ -55,8 +55,6 @@ class Build : NukeBuild
 
     readonly string CoreProjectName = "CertificateGen";
 
-    AbsolutePath CoreDirectory => RootDirectory / CoreProjectName;
-
     string username = "amescodes";
     RepositoryMetadata RepoMetadata => new RepositoryMetadata("git", @$"https://github.com/{username}/CertificateGen", GitVersion.BranchName, GitVersion.Sha);
     AbsolutePath NugetOutputDirectory => RootDirectory / "nuget";
@@ -68,7 +66,7 @@ class Build : NukeBuild
         .Before(Restore)
         .Executes(() =>
         {
-            CoreDirectory.GlobDirectories("*bin", "**/obj").ForEach(DeleteDirectory);
+            RootDirectory.GlobDirectories("*bin", "**/obj").ForEach(DeleteDirectory);
             EnsureCleanDirectory(NugetOutputDirectory);
         });
 
@@ -88,7 +86,9 @@ class Build : NukeBuild
                 .SetProjectFile(synapseCore)
                 .SetVersion(Version)
                 .SetConfiguration(Configuration)
-                .SetSynapseBuildProperties());
+                .SetBuildProperties());
+
+            MergeDllsWithILRepack();
         });
 
     Target Pack => _ => _
@@ -96,13 +96,13 @@ class Build : NukeBuild
         .Consumes(Compile)
         .Executes(() =>
         {
-            AbsolutePath coreBuildDir = (AbsolutePath)CoreDirectory / $"bin/{Configuration}";
+            AbsolutePath coreBuildDir = RootDirectory / $"bin" / Configuration;
             //File.Copy(IconPath, coreBuildDir / IconFileName, true);
 
             ManifestMetadata coreNugetPackageMetadata = new ManifestMetadata()
             {
                 Id = CoreProjectName,
-                Description = "Core package for gRPSynapse library. This gRPSynapse package should be loaded into any shared projects between the client project and the Revit (or other) project.",
+                Description = "Generate X509 certificates. Usable with native code.",
                 Version = NuGetVersion.Parse(Version), // sets during pack
                 //Icon = IconFileName,
                 Repository = RepoMetadata,
@@ -126,9 +126,8 @@ class Build : NukeBuild
                 .SetTargetPath(coreNuspecFilePath)
                 .SetBasePath(coreBuildDir)
                 .SetVersion(Version)
-                .SetSynapsePackProperties(Configuration, NugetOutputDirectory));
+                .SetPackProperties(Configuration, NugetOutputDirectory));
         });
-
 
     Target PublishNugetsGithub => _ => _
         .Requires(() => IsLocalBuild == false)
@@ -145,7 +144,7 @@ class Build : NukeBuild
                         .SetTargetPath(x)
                         .SetNoSymbols(false)
                         .SetSource("nuget.org")
-                        .SetApiKey(CertificateGenNugetApiKey)
+                        .SetApiKey(NugetApiKey)
                     );
                 });
             }
@@ -171,25 +170,15 @@ class Build : NukeBuild
                 });
         });
 
-    // core dependency version
-    static PackageDependencyGroup[] MakeNuGetDependencyGroup()
-    {
-        PackageDependency unmanagedExportDep = new PackageDependency("Revit.Async", new VersionRange(NuGetVersion.Parse("2.0.1")));
-        NuGetFramework targetFramework = NuGetFramework.Parse("net461", new DefaultFrameworkNameProvider());
-        PackageDependencyGroup packageDependencyGroup = new PackageDependencyGroup(targetFramework, new List<PackageDependency>() { unmanagedExportDep });
-        return new[] { packageDependencyGroup };
-    }
-
     void MergeDllsWithILRepack()
     {
-        AbsolutePath buildDir = (AbsolutePath)CoreDirectory / $"bin/{Configuration}";
+        AbsolutePath buildDir = RootDirectory / $"bin" / Configuration;
         AbsolutePath dllFile = buildDir / $"{CoreProjectName}.dll";
         string[] inputAssemblies = new string[]
         {
             dllFile,
-            buildDir / "gRPSynapse.Grpc.dll",
-            buildDir / "Grpc.Core.dll",
-            buildDir / "Grpc.Core.Api.dll",
+            buildDir / "BouncyCastle.Crypto.dll",
+            buildDir / "RGiesecke.DllExport.Metadata.dll"
         };
 
         ILRepack(_ => _
@@ -227,13 +216,13 @@ public static class BuildExtensions
     public static ManifestMetadata SetCommonNugetProperties(this ManifestMetadata nugetPackageMetadata)
     {
         nugetPackageMetadata.Authors = new[] { "ames codes" };
-        nugetPackageMetadata.Tags = "revit grpc ipc synapse";
-        nugetPackageMetadata.Copyright = "Copyright © 2022-23 ames codes";
+        nugetPackageMetadata.Tags = "security x509 native certificate ssl";
+        nugetPackageMetadata.Copyright = "Copyright © 2023 ames codes";
 
         return nugetPackageMetadata;
     }
 
-    public static DotNetBuildSettings SetSynapseBuildProperties(this DotNetBuildSettings settings)
+    public static DotNetBuildSettings SetBuildProperties(this DotNetBuildSettings settings)
     {
         return settings
             .SetNoRestore(true)
@@ -245,7 +234,7 @@ public static class BuildExtensions
             });
     }
 
-    public static NuGetPackSettings SetSynapsePackProperties(this NuGetPackSettings settings, string configuration,
+    public static NuGetPackSettings SetPackProperties(this NuGetPackSettings settings, string configuration,
         string outputDirectory)
     {
         return settings
