@@ -149,25 +149,25 @@ class Build : NukeBuild
                 });
             }
 
-            //string sourceName = "github";
-            //DotNetNuGetAddSource(_ => _
-            //    .SetUsername(username)
-            //    .SetPassword(GitHubActions.Instance.Token)
-            //    .SetStorePasswordInClearText(true)
-            //    .SetName(sourceName)
-            //    .SetSource($"https://nuget.pkg.github.com/{username}/index.json")
-            //);
+            string sourceName = "github";
+            DotNetNuGetAddSource(_ => _
+                .SetUsername(username)
+                .SetPassword(GitHubActions.Instance.Token)
+                .SetStorePasswordInClearText(true)
+                .SetName(sourceName)
+                .SetSource($"https://nuget.pkg.github.com/{username}/index.json")
+            );
 
-            //GlobFiles(NugetOutputDirectory, "*.nupkg")
-            //    .ForEach(x =>
-            //    {
-            //        DotNetNuGetPush(_ => _
-            //            .SetTargetPath(x)
-            //            .SetNoSymbols(false)
-            //            .SetSource(sourceName)
-            //            .SetApiKey(GitHubActions.Instance.Token)
-            //        );
-            //    });
+            GlobFiles(NugetOutputDirectory, "*.nupkg")
+                .ForEach(x =>
+                {
+                    DotNetNuGetPush(_ => _
+                        .SetTargetPath(x)
+                        .SetNoSymbols(false)
+                        .SetSource(sourceName)
+                        .SetApiKey(GitHubActions.Instance.Token)
+                    );
+                });
         });
 
     void MergeDllsWithILRepack()
