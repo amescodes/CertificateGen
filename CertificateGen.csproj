@@ -4,7 +4,7 @@
     <TargetFramework>net461</TargetFramework>
     <Platforms>x64</Platforms>
     <LangVersion>latest</LangVersion>
-    <DebugType>portable</DebugType>
+    <DebugType>full</DebugType>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 	  <!-- Invert the behavior of new .csproj format - exclude files by default -->
