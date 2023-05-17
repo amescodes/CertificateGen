@@ -1,5 +1,4 @@
 {
   "$schema": "./build.schema.json",
-  "Solution": "CertificateGen.sln",
-  "NugetApiKey": "v1:70Flu7h38T25w9lKimMpSKYq7dthlN8oWeVAUUkNkQvGdbm9PnazVpgHaT0S1/rD"
+  "Solution": "CertificateGen.sln"
 }
