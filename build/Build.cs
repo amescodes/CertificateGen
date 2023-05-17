@@ -27,7 +27,7 @@ using Manifest = NuGet.Packaging.Manifest;
 
 [GitHubActions(
     name: "cicd",
-    GitHubActionsImage.UbuntuLatest,
+    GitHubActionsImage.WindowsLatest,
     FetchDepth = 0,
     OnPullRequestBranches = new[] { "main", },
     OnPushBranches = new[] { "main", "develop" },
