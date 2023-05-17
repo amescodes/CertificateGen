@@ -142,7 +142,7 @@ class Build : NukeBuild
                 {
                     DotNetNuGetPush(_ => _
                         .SetTargetPath(x)
-                        .SetNoSymbols(false)
+                        .SetNoSymbols(true)
                         .SetSource("nuget.org")
                         .SetApiKey(NugetApiKey)
                     );
@@ -163,7 +163,7 @@ class Build : NukeBuild
                 {
                     DotNetNuGetPush(_ => _
                         .SetTargetPath(x)
-                        .SetNoSymbols(false)
+                        .SetNoSymbols(true)
                         .SetSource(sourceName)
                         .SetApiKey(GitHubActions.Instance.Token)
                     );
