@@ -2,7 +2,6 @@ assembly-versioning-scheme: MajorMinorPatch
 assembly-file-versioning-scheme: MajorMinorPatch
 assembly-informational-format: '{InformationalVersion}'
 mode: ContinuousDeployment
-increment: Inherit
 tag-prefix: '[vV]'
 major-version-bump-message: '\+semver:\s?(breaking|major)'
 minor-version-bump-message: '\+semver:\s?(feature|minor)'
@@ -13,7 +12,9 @@ build-metadata-padding: 4
 commits-since-version-source-padding: 4
 tag-pre-release-weight: 60000
 commit-message-incrementing: Enabled
+branches: {}
 ignore:
   sha: []
+increment: Inherit
 merge-message-formats: {}
 update-build-number: true
