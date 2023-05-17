@@ -43,6 +43,7 @@ namespace CertificateGen
             return ConvertCertificate(certificate, subjectKeyPair, random);
         }
 
+
         public static X509Certificate2 CreateCertificateAuthorityCertificate(string subjectName, string[] subjectAlternativeNames, KeyPurposeID[] usages)
         {
             // It's self-signed, so these are the same.
