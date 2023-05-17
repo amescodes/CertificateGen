@@ -19,6 +19,22 @@
 		<PackageDownload Include="ILRepack" Version="[2.1.0-beta1]" />
 		<PackageDownload Include="NuGet.CommandLine" Version="[6.4.0]" />
 	</ItemGroup>
+  
+	<ItemGroup>
+	  <None Remove="..\GitVersion.yml" />
+	</ItemGroup>
+  
+	<ItemGroup>
+	  <None Remove="..\GitVersion.yml" />
+	</ItemGroup>
+  
+	<ItemGroup>
+	  <None Remove="..\GitVersion.yml" />
+	</ItemGroup>
+  
+	<ItemGroup>
+	  <None Remove="..\GitVersion.yml" />
+	</ItemGroup>
 
 
 </Project>

@@ -108,7 +108,7 @@ class Build : NukeBuild
                 //Icon = IconFileName,
                 Repository = RepoMetadata,
             };
-            coreNugetPackageMetadata.SetCommonNugetProperties();
+            coreNugetPackageMetadata.SetCommonNugetProperties(); 
 
             Manifest coreNuspecFile = NuGet.Packaging.Manifest.Create(coreNugetPackageMetadata);
             coreNuspecFile.Files.Add(new ManifestFile() { Source = $"{CoreProjectName}.dll", Target = "lib/net461" });
