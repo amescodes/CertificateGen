@@ -149,26 +149,6 @@ class Build : NukeBuild
                     );
                 });
             }
-
-            //string sourceName = "github";
-            //DotNetNuGetAddSource(_ => _
-            //    .SetUsername(username)
-            //    .SetPassword(GitHubActions.Instance.Token)
-            //    .SetStorePasswordInClearText(true)
-            //    .SetName(sourceName)
-            //    .SetSource($"https://nuget.pkg.github.com/{username}/index.json")
-            //);
-
-            //GlobFiles(NugetOutputDirectory, "*.nupkg")
-            //    .ForEach(x =>
-            //    {
-            //        DotNetNuGetPush(_ => _
-            //            .SetTargetPath(x)
-            //            .SetNoSymbols(true)
-            //            .SetSource(sourceName)
-            //            .SetApiKey(GitHubActions.Instance.Token)
-            //        );
-            //    });
         });
 
     void MergeDllsWithILRepack()
