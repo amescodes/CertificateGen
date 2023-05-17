@@ -9,16 +9,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "build\_build.cspr
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|x64 = Debug|x64
-		Release|x64 = Release|x64
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{166C3B68-0420-4C41-B176-25D2E3830F39}.Debug|x64.ActiveCfg = Debug|x64
-		{166C3B68-0420-4C41-B176-25D2E3830F39}.Debug|x64.Build.0 = Debug|x64
-		{166C3B68-0420-4C41-B176-25D2E3830F39}.Release|x64.ActiveCfg = Release|x64
-		{166C3B68-0420-4C41-B176-25D2E3830F39}.Release|x64.Build.0 = Release|x64
-		{93B262A0-546C-445F-8DBE-BF4D06FF663E}.Debug|x64.ActiveCfg = Release|Any CPU
-		{93B262A0-546C-445F-8DBE-BF4D06FF663E}.Release|x64.ActiveCfg = Release|Any CPU
+		{166C3B68-0420-4C41-B176-25D2E3830F39}.Debug|x86.ActiveCfg = Debug|x86
+		{166C3B68-0420-4C41-B176-25D2E3830F39}.Debug|x86.Build.0 = Debug|x86
+		{166C3B68-0420-4C41-B176-25D2E3830F39}.Release|x86.ActiveCfg = Release|x86
+		{166C3B68-0420-4C41-B176-25D2E3830F39}.Release|x86.Build.0 = Release|x86
+		{93B262A0-546C-445F-8DBE-BF4D06FF663E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{93B262A0-546C-445F-8DBE-BF4D06FF663E}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

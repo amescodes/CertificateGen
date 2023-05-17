@@ -6,12 +6,20 @@ using System.Text;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.OpenSsl;
+using Org.BouncyCastle.Security;
 using RGiesecke.DllExport;
 
 namespace CertificateGen
 {
     public static class Auth
     {
+        [ComVisible(true)]
+        [DllExport]
+        public static AsymmetricCipherKeyPair GetKeyPair(X509Certificate2 cert)
+        {
+            return DotNetUtilities.GetKeyPair(cert.PrivateKey);
+        }
+
         [ComVisible(true)]
         [DllExport]
         public static string ConvertKeyToPem(AsymmetricCipherKeyPair key)
@@ -29,9 +37,11 @@ namespace CertificateGen
         public static string ConvertCertToPem(X509Certificate2 cert)
         {
             StringBuilder builder = new StringBuilder();
+
             builder.AppendLine("-----BEGIN CERTIFICATE-----");
             builder.AppendLine(Convert.ToBase64String(cert.Export(X509ContentType.Cert), Base64FormattingOptions.InsertLineBreaks));
             builder.AppendLine("-----END CERTIFICATE-----");
+
             return builder.ToString();
         }
 
