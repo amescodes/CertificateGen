@@ -1,30 +1,42 @@
 ﻿using System;
 using System.IO;
-using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
-using StringBuilder = System.Text.StringBuilder;
-
-using Org.BouncyCastle.Asn1.X509;
-using Org.BouncyCastle.Crypto.Operators;
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Security;
-using Org.BouncyCastle.X509;
-using Org.BouncyCastle.Crypto.Generators;
-using Org.BouncyCastle.Crypto.Prng;
-using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Utilities;
-using Org.BouncyCastle.OpenSsl;
-using X509Certificate = Org.BouncyCastle.X509.X509Certificate;
-using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using Org.BouncyCastle.Asn1.X509;
+using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.OpenSsl;
 using RGiesecke.DllExport;
-using BigInteger = Org.BouncyCastle.Math.BigInteger;
 
 namespace CertificateGen
 {
     public static class Auth
     {
-        [DllExport("get_certificate", CallingConvention = CallingConvention.Cdecl)]
+        [ComVisible(true)]
+        [DllExport]
+        public static string ConvertKeyToPem(AsymmetricCipherKeyPair key)
+        {
+            TextWriter textWriter = new StringWriter();
+            PemWriter pemWriter = new PemWriter(textWriter);
+            pemWriter.WriteObject(key.Private);
+            pemWriter.Writer.Flush();
+
+            return textWriter.ToString();
+        }
+
+        [ComVisible(true)]
+        [DllExport]
+        public static string ConvertCertToPem(X509Certificate2 cert)
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine("-----BEGIN CERTIFICATE-----");
+            builder.AppendLine(Convert.ToBase64String(cert.Export(X509ContentType.Cert), Base64FormattingOptions.InsertLineBreaks));
+            builder.AppendLine("-----END CERTIFICATE-----");
+            return builder.ToString();
+        }
+
+        [ComVisible(true)]
+        [DllExport]
         public static X509Certificate2 GetCertificate(string subjectName)
         {
             string serverCertName = $"CN={subjectName}";
@@ -65,7 +77,7 @@ namespace CertificateGen
                 store.Close();
             }
         }
-        
+
         private static X509Certificate2Collection GetCurrentCertificatesByName(X509Store store, string certName)
         {
             // Place all certificates in an X509Certificate2Collection object.

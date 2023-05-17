@@ -86,6 +86,7 @@ class Build : NukeBuild
                 .SetProjectFile(synapseCore)
                 .SetVersion(Version)
                 .SetConfiguration(Configuration)
+                .SetPlatform("x86")
                 .SetBuildProperties());
 
             MergeDllsWithILRepack();
