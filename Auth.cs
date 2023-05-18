@@ -47,24 +47,44 @@ namespace CertificateGen
 
         [ComVisible(true)]
         [DllExport]
+        public static X509Certificate2 GetOrCreateCertificate(string subjectName, string[] subjectAlternativeNames = null, KeyPurposeID[] usages = null)
+        {
+            if (GetCertificate(subjectName) is X509Certificate2 validCert)
+            {
+                return validCert;
+            }
+
+            if (subjectAlternativeNames == null)
+            {
+                subjectAlternativeNames = Array.Empty<string>();
+            }
+
+            if (usages == null)
+            {
+                usages = new[] { KeyPurposeID.IdKPServerAuth, KeyPurposeID.IdKPClientAuth, };
+            }
+
+            string serverCertName = $"CN={subjectName}";
+            X509Certificate2 caCert = Certification.CreateCertificateAuthorityCertificate(serverCertName, subjectAlternativeNames,
+               usages);
+            caCert.FriendlyName = subjectName;
+
+            return caCert;
+        }
+
+        [ComVisible(true)]
+        [DllExport]
         public static X509Certificate2 GetCertificate(string subjectName)
         {
             string serverCertName = $"CN={subjectName}";
 
             X509Store store = new X509Store(StoreName.AuthRoot);
-            X509Certificate2 caCert;
             if (GetCertificateFromStore(store, serverCertName) is X509Certificate2 validCert)
             {
-                caCert = validCert;
-            }
-            else
-            {
-                caCert = Certification.CreateCertificateAuthorityCertificate(serverCertName, Array.Empty<string>(),
-                    new KeyPurposeID[] { KeyPurposeID.IdKPClientAuth, KeyPurposeID.IdKPServerAuth, });
-                caCert.FriendlyName = subjectName;
+                return validCert;
             }
 
-            return caCert;
+            return null;
         }
 
         private static X509Certificate2 GetCertificateFromStore(X509Store store, string certName)
