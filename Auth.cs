@@ -45,6 +45,13 @@ namespace CertificateGen
             return builder.ToString();
         }
 
+        /// <summary>
+        /// Creates a self-signed certificate and adds to third-party certificate authorities. 
+        /// </summary>
+        /// <param name="subjectName"></param>
+        /// <param name="subjectAlternativeNames"></param>
+        /// <param name="usages"></param>
+        /// <returns></returns>
         [ComVisible(true)]
         [DllExport]
         public static X509Certificate2 GetOrCreateCertificate(string subjectName, string[] subjectAlternativeNames = null, KeyPurposeID[] usages = null)
@@ -68,6 +75,17 @@ namespace CertificateGen
             X509Certificate2 caCert = Certification.CreateCertificateAuthorityCertificate(serverCertName, subjectAlternativeNames,
                usages);
             caCert.FriendlyName = subjectName;
+
+            X509Store store = new X509Store(StoreName.AuthRoot);
+            try
+            {
+                store.Open(OpenFlags.ReadWrite);
+                store.Add(caCert);
+            }
+            finally
+            {
+                store.Close();
+            }
 
             return caCert;
         }
