@@ -88,12 +88,12 @@ namespace CertificateGen
                 }
             }
 
-            return CreateCertificate(subjectName, expirationDate, subjectAlternativeNames, usages);
+            return CreateCertificate(subjectName, expirationDate, store, subjectAlternativeNames, usages);
         }
 
         [ComVisible(true)]
         [DllExport]
-        public static X509Certificate2 CreateCertificate(string subjectName, DateTime expirationDate,
+        public static X509Certificate2 CreateCertificate(string subjectName, DateTime expirationDate, X509Store store,
             string[] subjectAlternativeNames, KeyPurposeID[] usages)
         {
             if (expirationDate < DateTime.Now)
@@ -111,7 +111,6 @@ namespace CertificateGen
                     usages);
             caCert.FriendlyName = subjectName;
 
-            X509Store store = new X509Store(StoreName.AuthRoot);
             CertStore.AddCertificateToStore(store, caCert);
 
             return caCert;
@@ -123,9 +122,9 @@ namespace CertificateGen
         {
             string serverCertName = $"CN={subjectName}";
 
-            if (CertStore.GetCertificateFromStore(store, serverCertName) is X509Certificate2 validCert)
+            if (CertStore.GetCertificateFromStore(store, serverCertName) is X509Certificate2 certificate)
             {
-                return validCert;
+                return certificate;
             }
 
             return null;
@@ -133,7 +132,7 @@ namespace CertificateGen
 
         private static bool IsExpired(X509Certificate2 cert)
         {
-            return cert.NotAfter < DateTime.Now;
+            return cert.NotAfter < DateTime.Now.ToUniversalTime();
         }
     }
 }

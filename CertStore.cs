@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 
 using RGiesecke.DllExport;
@@ -16,7 +15,7 @@ namespace CertificateGen
             {
                 store.Open(OpenFlags.ReadOnly);
 
-                X509Certificate2Collection signingCert = GetCurrentCertificatesByName(store, certName);
+                X509Certificate2Collection signingCert = GetCertificatesByName(store, certName);
                 if (signingCert.Count == 0)
                 {
                     return null;
@@ -33,15 +32,14 @@ namespace CertificateGen
 
         [ComVisible(true)]
         [DllExport]
-        public static X509Certificate2Collection GetCurrentCertificatesByName(X509Store store, string certName)
+        public static X509Certificate2Collection GetCertificatesByName(X509Store store, string certName)
         {
-            // Place all certificates in an X509Certificate2Collection object.
             X509Certificate2Collection certCollection = store.Certificates;
             // If using a certificate with a trusted root you do not need to FindByTimeValid, instead:
             // currentCerts.Find(X509FindType.FindBySubjectDistinguishedName, certName, true);
-            X509Certificate2Collection currentCerts = certCollection.Find(X509FindType.FindByTimeValid, DateTime.Now, false);
+            //X509Certificate2Collection currentCerts = certCollection.Find(X509FindType.FindByTimeValid, DateTime.Now.ToUniversalTime(), false);
 
-            return currentCerts.Find(X509FindType.FindBySubjectDistinguishedName, certName, false);
+            return certCollection.Find(X509FindType.FindBySubjectDistinguishedName, certName, false);
         }
 
         [ComVisible(true)]

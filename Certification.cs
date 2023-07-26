@@ -131,8 +131,8 @@ namespace CertificateGen
             certificateGenerator.SetSubjectDN(subjectDN);
 
             // Our certificate needs valid from/to values.
-            certificateGenerator.SetNotBefore(DateTime.UtcNow.Date);
-            certificateGenerator.SetNotAfter(expirationDate);
+            certificateGenerator.SetNotBefore(DateTime.Now.ToUniversalTime());
+            certificateGenerator.SetNotAfter(expirationDate.ToUniversalTime());
 
             // The subject's public key goes in the certificate.
             certificateGenerator.SetPublicKey(subjectKeyPair.Public);
