@@ -15,6 +15,7 @@
   <ItemGroup>
     <Compile Include="Auth.cs" />
     <Compile Include="Certification.cs" />
+    <Compile Include="CertStore.cs" />
   </ItemGroup>
 
   <ItemGroup>

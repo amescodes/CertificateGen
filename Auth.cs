@@ -3,10 +3,12 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.OpenSsl;
 using Org.BouncyCastle.Security;
+
 using RGiesecke.DllExport;
 
 namespace CertificateGen
@@ -46,58 +48,82 @@ namespace CertificateGen
         }
 
         /// <summary>
-        /// Creates a self-signed certificate and adds to third-party certificate authorities. 
+        /// Creates a self-signed certificate and adds to third-party certificate authorities. Valid for one year. Renews if expired. Use overload to set expiration date manually."/>
         /// </summary>
         /// <param name="subjectName"></param>
+        /// <param name="store"></param>
         /// <param name="subjectAlternativeNames"></param>
         /// <param name="usages"></param>
         /// <returns></returns>
         [ComVisible(true)]
         [DllExport]
-        public static X509Certificate2 GetOrCreateCertificate(string subjectName, string[] subjectAlternativeNames = null, KeyPurposeID[] usages = null)
+        public static X509Certificate2 GetOrCreateCertificate(string subjectName, X509Store store, string[] subjectAlternativeNames = null, KeyPurposeID[] usages = null)
         {
-            if (GetCertificate(subjectName) is X509Certificate2 validCert)
+            return GetOrCreateCertificate(subjectName, DateTime.Now.AddYears(1), true, store, subjectAlternativeNames, usages);
+        }
+
+        /// <summary>
+        /// Creates a self-signed certificate and adds to third-party certificate authorities. 
+        /// </summary>
+        /// <param name="subjectName"></param>
+        /// <param name="expirationDate"></param>
+        /// <param name="renew"></param>
+        /// <param name="store"></param>
+        /// <param name="subjectAlternativeNames"></param>
+        /// <param name="usages"></param>
+        /// <returns></returns>
+        [ComVisible(true)]
+        [DllExport]
+        public static X509Certificate2 GetOrCreateCertificate(string subjectName, DateTime expirationDate, bool renew, X509Store store, string[] subjectAlternativeNames = null, KeyPurposeID[] usages = null)
+        {
+            if (GetCertificate(store, subjectName) is X509Certificate2 foundCert)
             {
-                return validCert;
+                if (IsExpired(foundCert) && renew)
+                {
+                    CertStore.DeleteCertificateFromStore(store, foundCert);
+                }
+                else
+                {
+                    return foundCert;
+                }
             }
 
-            if (subjectAlternativeNames == null)
+            return CreateCertificate(subjectName, expirationDate, subjectAlternativeNames, usages);
+        }
+
+        [ComVisible(true)]
+        [DllExport]
+        public static X509Certificate2 CreateCertificate(string subjectName, DateTime expirationDate,
+            string[] subjectAlternativeNames, KeyPurposeID[] usages)
+        {
+            if (expirationDate < DateTime.Now)
             {
-                subjectAlternativeNames = Array.Empty<string>();
+                throw new ArgumentOutOfRangeException(nameof(expirationDate), "Expiration date must be after current time.");
             }
 
-            if (usages == null)
-            {
-                usages = new[] { KeyPurposeID.IdKPServerAuth, KeyPurposeID.IdKPClientAuth, };
-            }
+            subjectAlternativeNames ??= Array.Empty<string>();
+
+            usages ??= new[] { KeyPurposeID.IdKPServerAuth, KeyPurposeID.IdKPClientAuth, };
 
             string serverCertName = $"CN={subjectName}";
-            X509Certificate2 caCert = Certification.CreateCertificateAuthorityCertificate(serverCertName, subjectAlternativeNames,
-               usages);
+            X509Certificate2 caCert =
+                Certification.CreateCertificateAuthorityCertificate(serverCertName, expirationDate, subjectAlternativeNames,
+                    usages);
             caCert.FriendlyName = subjectName;
 
             X509Store store = new X509Store(StoreName.AuthRoot);
-            try
-            {
-                store.Open(OpenFlags.ReadWrite);
-                store.Add(caCert);
-            }
-            finally
-            {
-                store.Close();
-            }
+            CertStore.AddCertificateToStore(store, caCert);
 
             return caCert;
         }
 
         [ComVisible(true)]
         [DllExport]
-        public static X509Certificate2 GetCertificate(string subjectName)
+        public static X509Certificate2 GetCertificate(X509Store store, string subjectName)
         {
             string serverCertName = $"CN={subjectName}";
 
-            X509Store store = new X509Store(StoreName.AuthRoot);
-            if (GetCertificateFromStore(store, serverCertName) is X509Certificate2 validCert)
+            if (CertStore.GetCertificateFromStore(store, serverCertName) is X509Certificate2 validCert)
             {
                 return validCert;
             }
@@ -105,36 +131,9 @@ namespace CertificateGen
             return null;
         }
 
-        private static X509Certificate2 GetCertificateFromStore(X509Store store, string certName)
+        private static bool IsExpired(X509Certificate2 cert)
         {
-            try
-            {
-                store.Open(OpenFlags.ReadOnly);
-
-                X509Certificate2Collection signingCert = GetCurrentCertificatesByName(store, certName);
-                if (signingCert.Count == 0)
-                {
-                    return null;
-                }
-
-                // Return the first certificate in the collection, has the right name and is current.
-                return signingCert[0];
-            }
-            finally
-            {
-                store.Close();
-            }
-        }
-
-        private static X509Certificate2Collection GetCurrentCertificatesByName(X509Store store, string certName)
-        {
-            // Place all certificates in an X509Certificate2Collection object.
-            X509Certificate2Collection certCollection = store.Certificates;
-            // If using a certificate with a trusted root you do not need to FindByTimeValid, instead:
-            // currentCerts.Find(X509FindType.FindBySubjectDistinguishedName, certName, true);
-            X509Certificate2Collection currentCerts = certCollection.Find(X509FindType.FindByTimeValid, DateTime.Now, false);
-
-            return currentCerts.Find(X509FindType.FindBySubjectDistinguishedName, certName, false);
+            return cert.NotAfter < DateTime.Now;
         }
     }
 }

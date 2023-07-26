@@ -4,25 +4,27 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 
-using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.Pkcs;
-using Org.BouncyCastle.Crypto.Generators;
-using Org.BouncyCastle.Crypto.Prng;
+using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Operators;
+using Org.BouncyCastle.Crypto.Prng;
 using Org.BouncyCastle.Pkcs;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Utilities;
 using Org.BouncyCastle.X509;
-using X509Certificate = Org.BouncyCastle.X509.X509Certificate;
+
 using BigInteger = Org.BouncyCastle.Math.BigInteger;
+using X509Certificate = Org.BouncyCastle.X509.X509Certificate;
 
 namespace CertificateGen
-{ 
+{
     public static class Certification
     {
-        public static X509Certificate2 IssueCertificate(string subjectName, X509Certificate2 issuerCertificate, string[] subjectAlternativeNames, KeyPurposeID[] usages)
+        public static X509Certificate2 IssueCertificate(string subjectName, X509Certificate2 issuerCertificate,
+            DateTime expirationDate, string[] subjectAlternativeNames, KeyPurposeID[] usages)
         {
             // It's self-signed, so these are the same.
             string issuerName = issuerCertificate.Subject;
@@ -38,12 +40,13 @@ namespace CertificateGen
             const bool isCertificateAuthority = false;
             X509Certificate certificate = GenerateCertificate(random, subjectName, subjectKeyPair, serialNumber,
                                                   subjectAlternativeNames, issuerName, issuerKeyPair,
-                                                  issuerSerialNumber, isCertificateAuthority,
+                                                  issuerSerialNumber, isCertificateAuthority, expirationDate,
                                                   usages);
             return ConvertCertificate(certificate, subjectKeyPair, random);
         }
-        
-        public static X509Certificate2 CreateCertificateAuthorityCertificate(string subjectName, string[] subjectAlternativeNames, KeyPurposeID[] usages)
+
+        public static X509Certificate2 CreateCertificateAuthorityCertificate(string subjectName,
+            DateTime expirationDate, string[] subjectAlternativeNames, KeyPurposeID[] usages)
         {
             // It's self-signed, so these are the same.
             string issuerName = subjectName;
@@ -60,7 +63,7 @@ namespace CertificateGen
             const bool isCertificateAuthority = true;
             X509Certificate certificate = GenerateCertificate(random, subjectName, subjectKeyPair, serialNumber,
                                                   subjectAlternativeNames, issuerName, issuerKeyPair,
-                                                  issuerSerialNumber, isCertificateAuthority,
+                                                  issuerSerialNumber, isCertificateAuthority, expirationDate,
                                                   usages);
             return ConvertCertificate(certificate, subjectKeyPair, random);
         }
@@ -113,6 +116,7 @@ namespace CertificateGen
                                                            AsymmetricCipherKeyPair issuerKeyPair,
                                                            BigInteger issuerSerialNumber,
                                                            bool isCertificateAuthority,
+                                                           DateTime expirationDate,
                                                            KeyPurposeID[] usages)
         {
             X509V3CertificateGenerator certificateGenerator = new X509V3CertificateGenerator();
@@ -127,11 +131,8 @@ namespace CertificateGen
             certificateGenerator.SetSubjectDN(subjectDN);
 
             // Our certificate needs valid from/to values.
-            DateTime notBefore = DateTime.UtcNow.Date;
-            DateTime notAfter = notBefore.AddYears(2);
-
-            certificateGenerator.SetNotBefore(notBefore);
-            certificateGenerator.SetNotAfter(notAfter);
+            certificateGenerator.SetNotBefore(DateTime.UtcNow.Date);
+            certificateGenerator.SetNotAfter(expirationDate);
 
             // The subject's public key goes in the certificate.
             certificateGenerator.SetPublicKey(subjectKeyPair.Public);
